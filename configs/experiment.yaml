@@ -1,0 +1,24 @@
+dataset_config: configs/datasets/imdb.yaml
+model_config: configs/models/roberta_tcn_attn.yaml
+
+seed: 42
+
+preprocessing:
+  tokenizer_name: roberta-base
+  max_seq_len: 512
+  remove_urls: true
+  remove_mentions: true
+
+training:
+  epochs: 5
+  batch_size: 8
+  learning_rate: 1.0e-5
+  optimizer: adamw
+  loss: cross_entropy
+  grid:
+    hidden_units: [128, 256, 512]
+    learning_rate: [1.0e-4, 1.0e-5, 1.0e-6]
+
+runtime:
+  device: cpu
+  output_dir: outputs

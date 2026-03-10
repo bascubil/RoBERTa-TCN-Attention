@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local data & outputs (not committed)
+data/raw/*
+!data/raw/.gitkeep
+outputs/
+
+# Experiment / tracking
+wandb/
+runs/
+
+# IDEs
+.vscode/
+.idea/

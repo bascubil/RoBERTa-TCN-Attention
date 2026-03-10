@@ -1,0 +1,4 @@
+torch==2.8.0
+transformers==4.57.3
+pandas==2.2.3
+PyYAML==6.0.2

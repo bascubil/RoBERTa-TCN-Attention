@@ -1,0 +1,14 @@
+name: imdb
+path: data/raw/IMDB Dataset.csv
+task: binary sentiment classification
+num_labels: 2
+text_column: review
+label_column: sentiment
+sample_mode: false
+sample_size: 64
+split:
+  train: 0.9
+  val: 0.05
+  test: 0.05
+csv:
+  encoding: utf-8

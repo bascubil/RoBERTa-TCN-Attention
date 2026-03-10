@@ -1,0 +1,14 @@
+name: twitter_us_airline
+path: data/raw/Twitter US Airline Sentiment Dataset.csv
+task: 3-class sentiment classification
+num_labels: 3
+text_column: text
+label_column: airline_sentiment
+sample_mode: false
+sample_size: 64
+split:
+  train: 0.9
+  val: 0.05
+  test: 0.05
+csv:
+  encoding: utf-8

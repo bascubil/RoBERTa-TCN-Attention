@@ -1,0 +1,7 @@
+variant: roberta_tcn
+encoder_name: roberta-base
+hidden_units: 256
+kernel_size: 8
+num_layers: 8
+dropout: 0.1
+vocab_size: 30000
