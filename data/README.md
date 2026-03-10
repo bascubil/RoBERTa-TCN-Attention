@@ -1,11 +1,24 @@
-# (raw datasets are not included)
+# Data folder
 
 This repository does not redistribute the raw datasets used in the paper.
-Please download them from their original sources and place the raw files under:
+These are third-party datasets distributed under their own terms, so the raw files are not included here.
+
+Please download the datasets from their original sources and place the raw files under:
 
 - `data/raw/IMDB Dataset.csv`
 - `data/raw/Twitter US Airline Sentiment Dataset.csv`
 - `data/raw/Sentiment140 Dataset.csv`
+
+Dataset sources:
+- IMDb Review Dataset
+  - Original source: https://ai.stanford.edu/~amaas/data/sentiment/
+  - Download page: https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
+
+- Twitter US Airline Sentiment Dataset
+  - Download page: https://www.kaggle.com/datasets/crowdflower/twitter-airline-sentiment
+
+- Sentiment140 Dataset
+  - Download page: https://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip
 
 Expected columns:
 

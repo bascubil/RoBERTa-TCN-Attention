@@ -1,4 +1,4 @@
-# RoBERTa-TCN-Attention (Neurocomputing submission code)
+# RoBERTa-TCN-Attention
 
 This repository contains the companion code for the manuscript:
 
