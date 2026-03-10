@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Shared experiment utilities for table reproduction scripts."""
-
 from __future__ import annotations
 
 import csv

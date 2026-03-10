@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Run Table 2 ablation experiments."""
-
 from __future__ import annotations
 
 import argparse

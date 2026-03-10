@@ -1,5 +1,3 @@
-"""YAML config loading and merging helpers."""
-
 from __future__ import annotations
 
 from copy import deepcopy

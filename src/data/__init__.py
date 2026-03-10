@@ -1,5 +1,3 @@
-"""Data loading and preprocessing utilities."""
-
 from .loaders import build_data_bundle
 from .preprocessing import clean_text
 

@@ -1,6 +1,6 @@
-# Data folder (raw datasets are not included)
+# (raw datasets are not included)
 
-This repository **does not** redistribute the raw datasets used in the paper.
+This repository does not redistribute the raw datasets used in the paper.
 Please download them from their original sources and place the raw files under:
 
 - `data/raw/IMDB Dataset.csv`
@@ -16,5 +16,3 @@ Expected columns:
 Preprocessing in this codebase removes:
 - URLs
 - `@mentions`
-
-for **all** datasets to match the paper's experimental setup.

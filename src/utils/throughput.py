@@ -1,5 +1,3 @@
-"""Simple throughput timer for steps/sec tracking."""
-
 from __future__ import annotations
 
 import time

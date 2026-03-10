@@ -1,5 +1,3 @@
-"""Shared RoBERTa encoder loader and base model."""
-
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -53,7 +51,6 @@ def load_roberta_encoder(
         if not allow_random_init:
             raise RuntimeError(
                 f"Could not load pretrained encoder '{encoder_name}'. "
-                "Set model.allow_random_init=true for offline smoke tests."
             ) from exc
         return _build_random_roberta(
             fallback_vocab_size=fallback_vocab_size,
@@ -63,7 +60,6 @@ def load_roberta_encoder(
 
 
 class RobertaBackbone(nn.Module):
-    """Shared RoBERTa encoder for fairness across variant heads."""
 
     def __init__(self, cfg: Dict[str, Any]) -> None:
         super().__init__()

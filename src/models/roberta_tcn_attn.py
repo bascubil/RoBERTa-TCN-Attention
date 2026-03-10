@@ -1,9 +1,3 @@
-"""TCN + attention pooling head with residual fusion.
-
-Per manuscript, the attention-pooled sentence vector is optionally fused with
-the *TCN output* at the last valid (non-padding) token position.
-"""
-
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -41,8 +35,6 @@ class RoBERTaTCNAttentionClassifier(nn.Module):
             ]
         )
         self.attn_score = nn.Linear(hidden_units, 1)
-        # Residual fusion is an element-wise sum in hidden_units space.
-        # Keep an explicit module for clarity/extensibility.
         self.residual_proj = nn.Identity()
         self.post_norm = nn.LayerNorm(hidden_units)
         self.post_dropout = nn.Dropout(dropout)
@@ -53,14 +45,13 @@ class RoBERTaTCNAttentionClassifier(nn.Module):
         seq = self.backbone.dropout(seq)
 
         x = self.input_proj(seq.transpose(1, 2))
-        x = self.tcn(x).transpose(1, 2)  # [B, L, H]
+        x = self.tcn(x).transpose(1, 2)
 
-        attn_logits = self.attn_score(x).squeeze(-1)  # [B, L]
-        attn_weights = masked_softmax(attn_logits, attention_mask, dim=-1).unsqueeze(-1)  # [B, L, 1]
+        attn_logits = self.attn_score(x).squeeze(-1)
+        attn_weights = masked_softmax(attn_logits, attention_mask, dim=-1).unsqueeze(-1)
         pooled = (x * attn_weights).sum(dim=1)
 
         if self.use_residual_fusion:
-            # Manuscript: fuse with TCN output at the last valid token position.
             last_valid = gather_last_valid(x, attention_mask)
             pooled = pooled + self.residual_proj(last_valid)
 

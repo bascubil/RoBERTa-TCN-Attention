@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Run Table 1 hidden_units x lr grid across models and datasets."""
-
 from __future__ import annotations
 
 import argparse

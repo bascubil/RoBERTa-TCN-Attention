@@ -1,5 +1,3 @@
-"""Spec-aligned dataset loading, preprocessing, splitting, and tokenization."""
-
 from __future__ import annotations
 
 import hashlib

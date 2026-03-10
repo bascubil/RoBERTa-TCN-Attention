@@ -1,5 +1,3 @@
-"""Masking helpers used across model variants."""
-
 from __future__ import annotations
 
 import torch

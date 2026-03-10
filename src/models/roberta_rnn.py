@@ -1,5 +1,3 @@
-"""RNN-family heads over shared RoBERTa last_hidden_state."""
-
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -11,12 +9,6 @@ from .common import RobertaBackbone
 
 
 class RoBERTaRNNClassifier(nn.Module):
-    """RoBERTa -> {LSTM|GRU|BiLSTM} -> classifier.
-
-    This implementation keeps the historical notebook/paper behavior used in the
-    manuscript experiments: the classifier is built from the terminal RNN hidden
-    state without introducing an alternative mask-aware pooling mode.
-    """
 
     def __init__(self, cfg: Dict[str, Any], num_labels: int) -> None:
         super().__init__()
@@ -56,7 +48,7 @@ class RoBERTaRNNClassifier(nn.Module):
 
     def _terminal_hidden(self, state: Any) -> torch.Tensor:
         if self._is_lstm:
-            h_n = state[0]  # [num_layers * num_directions, B, H]
+            h_n = state[0]
         else:
             h_n = state
         if self.bidirectional:

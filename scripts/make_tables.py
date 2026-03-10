@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Render Table 1/2/3 CSVs in the manuscript layout."""
-
 from __future__ import annotations
 
 import argparse

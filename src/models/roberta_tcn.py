@@ -1,15 +1,3 @@
-"""TCN head over shared RoBERTa last_hidden_state.
-
-This implementation follows the manuscript description:
-  - dilated *causal* 1D convolutions (no future token leakage)
-  - increasing dilation factors (exponentially expanding receptive field)
-  - residual blocks with (Conv → Norm → ReLU → Dropout) × 2
-  - optional 1×1 projection when channel dimensions differ
-
-The module preserves sequence length so the upstream attention mask can be
-reused without modification.
-"""
-
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -24,13 +12,6 @@ from .common import RobertaBackbone
 
 
 class TemporalBlock(nn.Module):
-    """A single TCN residual block.
-
-    Notes
-    -----
-    - Inputs/outputs are shaped as [B, C, L].
-    - Causal padding is applied on the *left* only.
-    """
 
     def __init__(
         self,
@@ -51,7 +32,6 @@ class TemporalBlock(nn.Module):
         self.dilation = int(dilation)
         self.left_pad = (self.kernel_size - 1) * self.dilation
 
-        # Causal dilated convolutions (padding is applied manually in forward).
         self.conv1 = nn.Conv1d(
             in_channels,
             out_channels,
@@ -67,14 +47,12 @@ class TemporalBlock(nn.Module):
             padding=0,
         )
 
-        # Activation normalization (per time-step over channels).
         self.norm1 = nn.LayerNorm(out_channels)
         self.norm2 = nn.LayerNorm(out_channels)
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(float(dropout))
 
-        # Residual projection (1×1 conv) if channels differ.
         self.downsample: nn.Module
         if in_channels != out_channels:
             self.downsample = nn.Conv1d(in_channels, out_channels, kernel_size=1)
@@ -82,14 +60,12 @@ class TemporalBlock(nn.Module):
             self.downsample = nn.Identity()
 
     def _causal_dilated_conv(self, conv: nn.Conv1d, x: torch.Tensor) -> torch.Tensor:
-        # Left pad only so output at time t depends on <= t.
         if self.left_pad > 0:
             x = F.pad(x, (self.left_pad, 0))
         return conv(x)
 
     @staticmethod
     def _layer_norm_channels(x: torch.Tensor, norm: nn.LayerNorm) -> torch.Tensor:
-        # x: [B, C, L] -> [B, L, C] for LayerNorm
         return norm(x.transpose(1, 2)).transpose(1, 2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -116,7 +92,6 @@ class RoBERTaTCNClassifier(nn.Module):
         dropout = float(cfg.get("dropout", 0.1))
 
         self.input_proj = nn.Conv1d(self.backbone.hidden_size, hidden_units, kernel_size=1)
-        # Increasing dilation factors: 1, 2, 4, ...
         self.tcn = nn.Sequential(
             *[
                 TemporalBlock(

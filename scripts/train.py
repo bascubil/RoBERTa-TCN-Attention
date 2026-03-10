@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Single-entry training scaffold with YAML-driven configuration."""
-
 from __future__ import annotations
 
 import argparse

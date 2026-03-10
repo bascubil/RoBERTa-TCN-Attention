@@ -1,5 +1,3 @@
-"""Model factory for CLI entrypoints."""
-
 from __future__ import annotations
 
 from copy import deepcopy

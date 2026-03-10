@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Run Table 3 throughput measurements (validation steps/sec)."""
-
 from __future__ import annotations
 
 import argparse
