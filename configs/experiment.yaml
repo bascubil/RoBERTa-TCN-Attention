@@ -1,6 +1,3 @@
-dataset_config: configs/datasets/imdb.yaml
-model_config: configs/models/roberta_tcn_attn.yaml
-
 seed: 42
 
 preprocessing:
@@ -10,15 +7,20 @@ preprocessing:
   remove_mentions: true
 
 training:
-  epochs: 5
   batch_size: 8
+  epochs: 5
   learning_rate: 1.0e-5
-  optimizer: adamw
-  loss: cross_entropy
   grid:
     hidden_units: [128, 256, 512]
     learning_rate: [1.0e-4, 1.0e-5, 1.0e-6]
 
 runtime:
-  device: cpu
-  output_dir: outputs
+  device: null
+
+data_cache:
+  enabled: true
+  root: data/cache
+  build_if_missing: false
+  version: token-cache-v1
+  chunk_size: 50000
+  tokenize_batch_size: 1024

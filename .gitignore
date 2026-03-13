@@ -29,3 +29,7 @@ runs/
 # IDEs
 .vscode/
 .idea/
+
+#data cache
+data/cache/
+*.pt

@@ -1,5 +1,6 @@
-from .loaders import build_data_bundle
-from .preprocessing import clean_text
+from .loaders import build_data_bundle, prepare_dataset_cache
 
-__all__ = ["build_data_bundle", "clean_text"]
-
+__all__ = [
+    "build_data_bundle",
+    "prepare_dataset_cache",
+]

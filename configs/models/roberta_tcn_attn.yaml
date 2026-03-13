@@ -1,6 +1,6 @@
 variant: roberta_tcn_attn
 encoder_name: roberta-base
-hidden_units: 256
+hidden_units: 512
 kernel_size: 8
 num_layers: 8
 dropout: 0.1

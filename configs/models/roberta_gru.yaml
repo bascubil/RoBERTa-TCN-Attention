@@ -1,6 +1,6 @@
 variant: roberta_gru
 encoder_name: roberta-base
-hidden_units: 256
+hidden_units: 512
 dropout: 0.1
-num_layers: 1
+num_layers: 2
 vocab_size: 30000

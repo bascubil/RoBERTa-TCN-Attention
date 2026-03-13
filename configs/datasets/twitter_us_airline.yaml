@@ -1,14 +1,22 @@
 name: twitter_us_airline
 path: data/raw/Twitter US Airline Sentiment Dataset.csv
-task: 3-class sentiment classification
-num_labels: 3
+
 text_column: text
 label_column: airline_sentiment
+
+csv: {}
+
+split:
+  train: 0.90
+  val: 0.05
+
 sample_mode: false
 sample_size: 64
-split:
-  train: 0.9
-  val: 0.05
-  test: 0.05
-csv:
-  encoding: utf-8
+
+cache:
+  enabled: true
+  root: data/cache
+  build_if_missing: false
+  version: token-cache-v1
+  chunk_size: 50000
+  tokenize_batch_size: 1024

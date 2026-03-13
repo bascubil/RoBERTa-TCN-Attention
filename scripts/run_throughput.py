@@ -1,63 +1,83 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+from typing import Dict, List
 
-from _experiment_utils import DATASET_KEYS, compose_runtime_config, measure_validation_throughput, write_csv
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
+from scripts._experiment_utils import (
+    DATASET_DISPLAY,
+    DATASET_KEYS,
+    TABLE1_MODELS,
+    compose_runtime_config,
+    format_float,
+    measure_validation_throughput,
+    write_csv,
+)
+
+import torch
+torch.backends.cudnn.benchmark = True
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run Table 3 throughput benchmarks.")
+    parser = argparse.ArgumentParser(description="Measure validation throughput with cache-aware loading.")
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
-    parser.add_argument("--output", type=str, default="outputs/raw/table3_raw.csv")
-    parser.add_argument("--hidden-units", type=int, default=512)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default=None)
-    parser.add_argument("--sample-mode", action="store_true")
-    parser.add_argument("--sample-size", type=int, default=64)
-    parser.add_argument("--max-seq-len", type=int, default=None)
+    parser.add_argument(
+        "--datasets",
+        nargs="+",
+        choices=list(DATASET_KEYS),
+        default=list(DATASET_KEYS),
+    )
     parser.add_argument("--batch-size", type=int, default=None)
-    parser.add_argument("--warmup-steps", type=int, default=1)
+    parser.add_argument("--max-seq-len", type=int, default=None)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--device", type=str, default=None)
+    parser.add_argument("--cache-root", type=str, default=None)
+    parser.add_argument("--build-cache-if-missing", action="store_true")
+    parser.add_argument("--output", type=str, default="outputs/raw/table3_raw.csv")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    models = [
-        ("RoBERTa-LSTM", "roberta_lstm", {}),
-        ("RoBERTa-BiLSTM", "roberta_bilstm", {}),
-        ("RoBERTa-GRU", "roberta_gru", {}),
-        ("RoBERTa-TCN", "roberta_tcn", {}),
-        ("RoBERTa-TCN-Attn", "roberta_tcn_attn", {"use_residual_fusion": True}),
-    ]
 
-    rows = []
-    for model_name, variant, overrides in models:
-        row = [model_name]
-        for dataset in DATASET_KEYS:
+    rows: List[List[str]] = []
+    for model_name, variant in TABLE1_MODELS:
+    # for model_name, variant in [("RoBERTa-TCN", "roberta_tcn")]:
+        per_dataset: Dict[str, str] = {}
+        for dataset in args.datasets:
             cfg = compose_runtime_config(
                 config_path=args.config,
                 dataset=dataset,
                 variant=variant,
-                hidden_units=args.hidden_units,
+                hidden_units=None,
                 learning_rate=None,
                 max_seq_len=args.max_seq_len,
                 epochs=None,
                 batch_size=args.batch_size,
-                sample_mode=args.sample_mode,
-                sample_size=args.sample_size,
+                sample_mode=False,
+                sample_size=64,
                 seed=args.seed,
                 device=args.device,
-                model_overrides=overrides,
+                cache_root=args.cache_root,
+                build_cache_if_missing=args.build_cache_if_missing,
+                cache_enabled=True,
             )
-            sps = measure_validation_throughput(cfg, split="val", warmup_steps=args.warmup_steps)
-            row.append(sps)
-            print(f"[table3] model={model_name} dataset={dataset} steps_per_sec={sps:.4f}")
+            throughput = measure_validation_throughput(cfg, split="val")
+            per_dataset[dataset] = format_float(throughput)
+            print(f"[{dataset}] {model_name}: {throughput:.4f} steps/s")
+
+        row = [model_name]
+        for dataset in args.datasets:
+            row.append(per_dataset.get(dataset, ""))
         rows.append(row)
 
-    header = ["Model", "IMDb", "Twitter", "Sentiment140"]
-    write_csv(Path(args.output), header, rows)
-    print(f"[done] wrote raw table3 results: {args.output}")
+    header = ["Model"] + [DATASET_DISPLAY[d] for d in args.datasets]
+    write_csv(Path(args.output), header=header, rows=rows)
+    print(f"[OK] wrote: {args.output}")
 
 
 if __name__ == "__main__":

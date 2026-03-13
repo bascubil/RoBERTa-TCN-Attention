@@ -1,15 +1,24 @@
 name: sentiment140
 path: data/raw/Sentiment140 Dataset.csv
-task: binary sentiment classification
-num_labels: 2
+
 text_column: text
 label_column: target
-sample_mode: false
-sample_size: 64
-split:
-  train: 0.9
-  val: 0.05
-  test: 0.05
+
 csv:
   encoding: latin-1
   header: null
+
+split:
+  train: 0.90
+  val: 0.05
+
+sample_mode: false
+sample_size: 64
+
+cache:
+  enabled: true
+  root: data/cache
+  build_if_missing: false
+  version: token-cache-v1
+  chunk_size: 50000
+  tokenize_batch_size: 1024

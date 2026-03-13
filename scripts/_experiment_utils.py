@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import csv
 import math
-import time
 import sys
+import time
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
-import yaml
 import torch
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -21,6 +21,7 @@ from src.models import create_model
 from src.utils.config import deep_merge, load_composed_config, resolve_config_path
 from src.utils.seed import set_seed
 from src.utils.throughput import ThroughputTimer
+
 
 DATASET_KEYS = ("imdb", "twitter_us_airline", "sentiment140")
 DATASET_DISPLAY = {
@@ -91,6 +92,9 @@ def compose_runtime_config(
     sample_size: int,
     seed: int,
     device: str | None,
+    cache_root: str | None = None,
+    build_cache_if_missing: bool | None = None,
+    cache_enabled: bool | None = None,
     model_overrides: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     cfg = deep_merge({}, load_experiment_config(config_path))
@@ -105,8 +109,10 @@ def compose_runtime_config(
         "roberta_tcn_attn": "roberta_tcn_attn.yaml",
         "roberta_tcn_attention": "roberta_tcn_attn.yaml",
     }
+
     with dataset_cfg_path.open("r", encoding="utf-8") as fh:
         cfg["dataset"] = yaml.safe_load(fh) or {}
+
     with (REPO_ROOT / "configs" / "models" / model_cfg_map[variant]).open("r", encoding="utf-8") as fh:
         cfg["model"] = yaml.safe_load(fh) or {}
 
@@ -115,6 +121,11 @@ def compose_runtime_config(
     cfg.setdefault("runtime", {})
     cfg.setdefault("dataset", {})
     cfg.setdefault("model", {})
+    cfg.setdefault("data_cache", {})
+    cfg["dataset"].setdefault("cache", {})
+
+    # Apply top-level default cache policy into dataset cache.
+    cfg["dataset"]["cache"] = deep_merge(dict(cfg.get("data_cache", {})), dict(cfg["dataset"].get("cache", {})))
 
     cfg["seed"] = int(seed)
     cfg["runtime"]["device"] = default_device(device)
@@ -132,8 +143,17 @@ def compose_runtime_config(
         cfg["training"]["epochs"] = int(epochs)
     if batch_size is not None:
         cfg["training"]["batch_size"] = int(batch_size)
+
+    if cache_root is not None:
+        cfg["dataset"]["cache"]["root"] = str(cache_root)
+    if build_cache_if_missing is not None:
+        cfg["dataset"]["cache"]["build_if_missing"] = bool(build_cache_if_missing)
+    if cache_enabled is not None:
+        cfg["dataset"]["cache"]["enabled"] = bool(cache_enabled)
+
     if model_overrides:
         cfg["model"] = deep_merge(cfg["model"], model_overrides)
+
     return cfg
 
 
@@ -141,9 +161,11 @@ def _prepare_model_inputs(cfg: Dict[str, Any], data_bundle: Dict[str, Any]) -> D
     model_cfg = deepcopy(cfg["model"])
     preprocess_cfg = cfg["preprocessing"]
     dataset_cfg = cfg["dataset"]
+
     model_cfg["vocab_size"] = int(data_bundle["vocab_size"])
     model_cfg["encoder_name"] = str(preprocess_cfg.get("tokenizer_name", "roberta-base"))
     model_cfg["max_seq_len"] = int(preprocess_cfg.get("max_seq_len", 512))
+
     sample_mode = bool(dataset_cfg.get("sample_mode", False))
     model_cfg["local_files_only"] = sample_mode
     model_cfg["allow_random_init"] = sample_mode
@@ -152,6 +174,7 @@ def _prepare_model_inputs(cfg: Dict[str, Any], data_bundle: Dict[str, Any]) -> D
 
 def run_train_eval(cfg: Dict[str, Any], *, dry_run: bool = False, eval_split: str = "test") -> Dict[str, Any]:
     set_seed(int(cfg.get("seed", 42)))
+
     training_cfg = cfg["training"]
     preprocess_cfg = cfg["preprocessing"]
     dataset_cfg = cfg["dataset"]
@@ -163,65 +186,81 @@ def run_train_eval(cfg: Dict[str, Any], *, dry_run: bool = False, eval_split: st
 
     data_bundle = build_data_bundle(dataset_cfg, preprocess_cfg, training_cfg, seed=int(cfg["seed"]))
     model_cfg = _prepare_model_inputs(cfg, data_bundle)
+
     model = create_model(model_cfg, num_labels=int(data_bundle["num_labels"])).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     criterion = torch.nn.CrossEntropyLoss()
 
     train_split = data_bundle["train"]
     n_train = train_split["labels"].shape[0]
-    max_steps = 1 if dry_run else max(1, n_train // batch_size)
+    max_steps = 1 if dry_run else max(1, math.ceil(n_train / batch_size))
 
     timer = ThroughputTimer()
     timer.start()
+
     model.train()
     for _ in range(epochs):
         for step in range(max_steps):
             start = step * batch_size
             end = min(start + batch_size, n_train)
+
             input_ids = train_split["input_ids"][start:end].to(device)
             attention_mask = train_split["attention_mask"][start:end].to(device)
             labels = train_split["labels"][start:end].to(device)
+
             logits = model(input_ids, attention_mask)
             loss = criterion(logits, labels)
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
             if dry_run:
                 break
+
         if dry_run:
             break
+
     train_steps_per_sec = timer.stop(max_steps)
 
     split = data_bundle[eval_split]
     preds: List[int] = []
     labels_all: List[int] = []
+
     model.eval()
     with torch.no_grad():
         for start in range(0, split["labels"].shape[0], batch_size):
             end = min(start + batch_size, split["labels"].shape[0])
+
             input_ids = split["input_ids"][start:end].to(device)
             attention_mask = split["attention_mask"][start:end].to(device)
             labels = split["labels"][start:end]
+
             logits = model(input_ids, attention_mask)
             preds.extend(torch.argmax(logits, dim=-1).detach().cpu().tolist())
             labels_all.extend(labels.detach().cpu().tolist())
+
     return {
         "accuracy": float(accuracy(preds, labels_all)),
         "macro_f1": float(macro_f1(preds, labels_all)),
         "train_steps_per_sec": float(train_steps_per_sec),
         "variant": str(model_cfg.get("variant")),
         "source": str(data_bundle.get("source", "")),
+        "raw_source": str(data_bundle.get("raw_source", "")),
+        "cache_dir": str(data_bundle.get("cache_dir", "")),
     }
 
 
-def measure_validation_throughput(cfg: Dict[str, Any], *, split: str = "val", warmup_steps: int = 1) -> float:
+def measure_validation_throughput(cfg: Dict[str, Any], *, split: str = "val", warmup_steps: int = 10) -> float:
     set_seed(int(cfg.get("seed", 42)))
+
     training_cfg = cfg["training"]
     preprocess_cfg = cfg["preprocessing"]
     dataset_cfg = cfg["dataset"]
 
     device = cfg["runtime"].get("device") or default_device()
     batch_size = int(training_cfg.get("batch_size", 8))
+
     data_bundle = build_data_bundle(dataset_cfg, preprocess_cfg, training_cfg, seed=int(cfg["seed"]))
     model_cfg = _prepare_model_inputs(cfg, data_bundle)
     model = create_model(model_cfg, num_labels=int(data_bundle["num_labels"])).to(device)
@@ -231,6 +270,7 @@ def measure_validation_throughput(cfg: Dict[str, Any], *, split: str = "val", wa
     num_items = int(target["labels"].shape[0])
     if num_items == 0:
         return 0.0
+
     steps = max(1, math.ceil(num_items / batch_size))
 
     with torch.no_grad():
@@ -249,6 +289,7 @@ def measure_validation_throughput(cfg: Dict[str, Any], *, split: str = "val", wa
             attention_mask = target["attention_mask"][start:end].to(device)
             _ = model(input_ids, attention_mask)
         elapsed = time.perf_counter() - t0
+
     return float(steps / elapsed) if elapsed > 0 else 0.0
 
 
