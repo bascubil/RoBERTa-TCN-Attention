@@ -44,8 +44,15 @@ See `data/README.md` for required column names.
 ## Training / evaluation
 
 Base experiment config:
-
 - `configs/experiment.yaml`
+
+### Prepare token cache
+The default configuration expects token caches to exist in advance.
+
+```bash
+python scripts/prepare_dataset_cache.py \
+  --config configs/experiment.yaml \
+  --datasets imdb twitter_us_airline sentiment140
 
 Train one variant (example: RoBERTa-TCN-Attention on IMDb):
 
@@ -65,7 +72,8 @@ python scripts/eval.py \
   --config configs/experiment.yaml \
   --dataset imdb \
   --model-variant roberta_tcn_attn \
-  --checkpoint outputs/last_model.pt
+  --epochs 1 \
+  --eval-split test
 ```
 
 ## Reproducing Tables 1–3

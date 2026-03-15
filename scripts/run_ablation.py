@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
-from typing import List
+from typing import Dict, List
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from scripts._experiment_utils import (
     DATASET_KEYS,
-    TABLE1_MODELS,
+    TABLE2_MODELS,
     compose_runtime_config,
     format_float,
     run_train_eval,
@@ -15,7 +20,7 @@ from scripts._experiment_utils import (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run ablation-style benchmark with cache-aware data loading.")
+    parser = argparse.ArgumentParser(description="Run Table 2 ablation benchmark.")
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
     parser.add_argument(
         "--datasets",
@@ -34,12 +39,20 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _cell(metrics_by_dataset: Dict[str, Dict[str, float]], dataset: str, key: str) -> str:
+    if dataset not in metrics_by_dataset:
+        return ""
+    return format_float(metrics_by_dataset[dataset][key])
+
+
 def main() -> None:
     args = parse_args()
-
     rows: List[List[str]] = []
-    for dataset in args.datasets:
-        for display_name, variant in TABLE1_MODELS:
+
+    for display_name, variant in TABLE2_MODELS:
+        metrics_by_dataset: Dict[str, Dict[str, float]] = {}
+
+        for dataset in args.datasets:
             cfg = compose_runtime_config(
                 config_path=args.config,
                 dataset=dataset,
@@ -58,26 +71,27 @@ def main() -> None:
                 cache_enabled=True,
             )
             result = run_train_eval(cfg)
-            rows.append(
-                [
-                    dataset,
-                    display_name,
-                    format_float(result["accuracy"]),
-                    format_float(result["macro_f1"]),
-                    format_float(result["train_steps_per_sec"]),
-                    result.get("cache_dir", ""),
-                ]
-            )
+            metrics_by_dataset[dataset] = result
+
             print(
                 f"[{dataset}] {display_name} | "
                 f"acc={result['accuracy']:.4f} "
-                f"f1={result['macro_f1']:.4f} "
-                f"steps/s={result['train_steps_per_sec']:.4f}"
+                f"f1={result['macro_f1']:.4f}"
             )
+
+        rows.append([
+            display_name,
+            _cell(metrics_by_dataset, "imdb", "accuracy"),
+            _cell(metrics_by_dataset, "imdb", "macro_f1"),
+            _cell(metrics_by_dataset, "twitter_us_airline", "accuracy"),
+            _cell(metrics_by_dataset, "twitter_us_airline", "macro_f1"),
+            _cell(metrics_by_dataset, "sentiment140", "accuracy"),
+            _cell(metrics_by_dataset, "sentiment140", "macro_f1"),
+        ])
 
     write_csv(
         Path(args.output),
-        header=["Dataset", "Model", "Accuracy", "Macro-F1", "TrainSteps/s", "CacheDir"],
+        header=["Model", "IMDb_Acc", "IMDb_F1", "Twitter_Acc", "Twitter_F1", "Sentiment140_Acc", "Sentiment140_F1",],
         rows=rows,
     )
     print(f"[OK] wrote: {args.output}")

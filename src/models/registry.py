@@ -16,6 +16,8 @@ SUPPORTED_VARIANTS = (
     "roberta_tcn",
     "roberta_tcn_attention",
     "roberta_tcn_attn",
+    "roberta_tcn_attn_no_residual",
+    "roberta_tcn_attn_residual",
 )
 
 
@@ -33,6 +35,6 @@ def create_model(model_cfg: Dict[str, Any], num_labels: int):
         return RoBERTaRNNClassifier(cfg=cfg, num_labels=num_labels)
     if variant == "roberta_tcn":
         return RoBERTaTCNClassifier(cfg=cfg, num_labels=num_labels)
-    if variant in ("roberta_tcn_attention", "roberta_tcn_attn"):
+    if variant in ("roberta_tcn_attention", "roberta_tcn_attn", "roberta_tcn_attn_no_residual", "roberta_tcn_attn_residual",):
         return RoBERTaTCNAttentionClassifier(cfg=cfg, num_labels=num_labels)
     raise ValueError(f"Unsupported model variant '{variant}'. Supported: {SUPPORTED_VARIANTS}")

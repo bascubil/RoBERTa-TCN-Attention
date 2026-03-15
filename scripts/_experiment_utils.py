@@ -39,6 +39,12 @@ TABLE1_MODELS = [
     ("RoBERTa-TCN-Attention", "roberta_tcn_attn"),
 ]
 
+TABLE2_MODELS = [
+    ("TCN", "roberta_tcn"),
+    ("TCN-Attn (without residual connection)", "roberta_tcn_attn_no_residual"),
+    ("TCN-Attn (with residual connection)", "roberta_tcn_attn_residual"),
+]
+
 
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,6 +114,8 @@ def compose_runtime_config(
         "roberta_tcn": "roberta_tcn.yaml",
         "roberta_tcn_attn": "roberta_tcn_attn.yaml",
         "roberta_tcn_attention": "roberta_tcn_attn.yaml",
+        "roberta_tcn_attn_no_residual": "roberta_tcn_attn_no_residual.yaml",
+        "roberta_tcn_attn_residual": "roberta_tcn_attn_residual.yaml",
     }
 
     with dataset_cfg_path.open("r", encoding="utf-8") as fh:

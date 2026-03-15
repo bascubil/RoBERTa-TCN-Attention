@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 import argparse
 import json
 
@@ -11,13 +18,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
     parser.add_argument("--dataset", type=str, required=True, choices=["imdb", "twitter_us_airline", "sentiment140"])
     parser.add_argument(
-        "--variant",
+        "--variant", "--model-variant",
+        dest = "variant",
         type=str,
         required=True,
-        choices=["roberta_base", "roberta_lstm", "roberta_bilstm", "roberta_gru", "roberta_tcn", "roberta_tcn_attn"],
+        choices=["roberta_base", "roberta_lstm", "roberta_bilstm", "roberta_gru", "roberta_tcn", "roberta_tcn_attn", "roberta_tcn_attn_no_residual","roberta_tcn_attn_residual"],
     )
     parser.add_argument("--hidden-units", type=int, default=None)
-    parser.add_argument("--learning-rate", type=float, default=None)
+    parser.add_argument("--learning-rate","--lr", dest = "learning_rate",type=float, default=None)
     parser.add_argument("--max-seq-len", type=int, default=None)
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=None)

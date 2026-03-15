@@ -2,10 +2,15 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from _experiment_utils import format_float
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts._experiment_utils import format_float
 
 
 TABLE1_ORDER = [
@@ -27,8 +32,8 @@ TABLE1_ORDER = [
     ("RoBERTa-TCN-Attention", "512"),
 ]
 LR_ORDER = ["1e-4", "1e-5", "1e-6"]
-TABLE2_ORDER = ["TCN", "TCN-Attnw/o Residual", "TCN-Attnw/ Residual"]
-TABLE3_ORDER = ["RoBERTa-LSTM", "RoBERTa-BiLSTM", "RoBERTa-GRU", "RoBERTa-TCN", "RoBERTa-TCN-Attn"]
+TABLE2_ORDER = ["TCN", "TCN-Attn (without residual connection)", "TCN-Attn (with residual connection)"]
+TABLE3_ORDER = ["RoBERTa-LSTM", "RoBERTa-BiLSTM", "RoBERTa-GRU", "RoBERTa-TCN", "RoBERTa-TCN-Attention"]
 
 
 def parse_args() -> argparse.Namespace:
