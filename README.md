@@ -1,14 +1,14 @@
 # RoBERTa-TCN-Attention
 
-This repository contains the companion code for the manuscript:
+This repository contains the code for the manuscript:
 
 > A Sentiment Classification Model Using RoBERTa-TCN with Self-Attention  
 > Namwoo Kim, Taehyun Ha
 
-It provides a reproducible pipeline to:
-- preprocess and cache tokenized datasets,
-- train and evaluate several RoBERTa-based sentiment classifiers, and
-- reproduce the paper tables.
+It includes:
+- preprocess and token caching
+- train and evaluate several model variants
+- generate the paper tables
 
 ## Implemented model variants
 
@@ -156,7 +156,7 @@ python scripts/train.py \
   --lr 1e-5
 ```
 
-Useful options:
+Options:
 - `--epochs`
 - `--batch-size`
 - `--max-seq-len`
@@ -181,7 +181,7 @@ python scripts/eval.py \
   --eval-split test
 ```
 
-Supported evaluation splits:
+evaluation splits:
 - `train`
 - `val`
 - `test`
@@ -209,7 +209,7 @@ Run the raw experiment sweep:
 python scripts/run_grid.py --config configs/experiment.yaml
 ```
 
-Default raw output:
+output:
 - `outputs/raw/table1_raw.csv`
 
 Notes:
@@ -227,7 +227,7 @@ Run the ablation benchmark:
 python scripts/run_ablation.py --config configs/experiment.yaml
 ```
 
-Default raw output:
+Default output:
 - `outputs/raw/table2_raw.csv`
 
 Ablation rows:
@@ -243,7 +243,7 @@ Run the throughput benchmark:
 python scripts/run_throughput.py --config configs/experiment.yaml
 ```
 
-Default raw output:
+Default output:
 - `outputs/raw/table3_raw.csv`
 
 Notes:
@@ -252,9 +252,9 @@ Notes:
 - throughput depends on hardware, CUDA/cuDNN, and software versions
 - on CUDA, the script enables cuDNN benchmark and TF32-related settings for measurement
 
-### Build the final paper-layout CSV tables
+### Generate the paper-layout tables
 
-After generating the raw CSV files, build the final table-format CSVs:
+After generating the CSV files, build the table:
 
 ```bash
 python scripts/make_tables.py

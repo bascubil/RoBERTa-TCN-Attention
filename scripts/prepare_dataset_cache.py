@@ -19,7 +19,7 @@ from scripts._experiment_utils import (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Prepare token cache for datasets.")
+    parser = argparse.ArgumentParser(description="token cache for datasets.")
     parser.add_argument(
         "--config",
         type=str,
@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--force-rebuild",
         action="store_true",
-        help="Rebuild even if a matching cache already exists.",
+        help="Rebuild the cache even if it already exists.",
     )
     return parser.parse_args()
 

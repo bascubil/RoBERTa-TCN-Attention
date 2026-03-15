@@ -26,9 +26,6 @@ from .preprocessing import clean_text
 
 
 class _OfflineFallbackTokenizer:
-    """
-    Minimal tokenizer used only for offline sample mode smoke tests.
-    """
 
     def __init__(self, vocab_size: int = 50265) -> None:
         self.vocab_size = vocab_size
@@ -50,7 +47,7 @@ class _OfflineFallbackTokenizer:
         return_tensors: str,
     ) -> Dict[str, torch.Tensor]:
         if return_tensors != "pt":
-            raise ValueError("Fallback tokenizer only supports return_tensors='pt'")
+            raise ValueError("return_tensors='pt'")
 
         input_ids: List[List[int]] = []
         masks: List[List[int]] = []
@@ -164,7 +161,6 @@ def _load_tokenizer(tokenizer_name: str, sample_mode: bool) -> Tuple[Any, str]:
             return _OfflineFallbackTokenizer(), "offline-fallback"
         raise RuntimeError(
             f"Failed to load tokenizer '{tokenizer_name}'. "
-            "Ensure internet/cache access, or run with sample_mode=true for offline smoke tests."
         ) from exc
 
 
@@ -267,7 +263,7 @@ def prepare_dataset_cache(
 
     sample_mode = bool(dataset_cfg.get("sample_mode", False) or dataset_cfg.get("use_synthetic_data", False))
     if sample_mode:
-        raise ValueError("prepare_dataset_cache() does not support sample_mode=true.")
+        raise ValueError("does not support sample_mode=true.")
 
     tokenizer_name = str(preprocessing_cfg.get("tokenizer_name", "roberta-base"))
     max_seq_len = int(preprocessing_cfg.get("max_seq_len", 512))
@@ -407,7 +403,6 @@ def build_data_bundle(
 
     if not cache_enabled:
         raise ValueError(
-            "This refactor expects token cache usage. "
             "Set dataset.cache.enabled=true, or enable sample_mode for smoke tests."
         )
 
@@ -429,6 +424,5 @@ def build_data_bundle(
 
     raise FileNotFoundError(
         f"Cache not found at: {cache_dir}\n"
-        "Run scripts/prepare_dataset_cache.py first, "
-        "or set dataset.cache.build_if_missing=true."
+        "Run scripts/prepare_dataset_cache.py"
     )

@@ -132,7 +132,6 @@ def compose_runtime_config(
     cfg.setdefault("data_cache", {})
     cfg["dataset"].setdefault("cache", {})
 
-    # Apply top-level default cache policy into dataset cache.
     cfg["dataset"]["cache"] = deep_merge(dict(cfg.get("data_cache", {})), dict(cfg["dataset"].get("cache", {})))
 
     cfg["seed"] = int(seed)

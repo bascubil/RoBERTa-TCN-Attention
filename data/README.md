@@ -1,7 +1,7 @@
 # Data folder
 
-This repository does not redistribute the raw datasets used in the paper.
-These are third-party datasets distributed under their own terms, so the raw files are not included here.
+Raw dataset files are not included in this repository.
+Download the files listed below and place them in `data/raw/`.
 
 Please download the datasets from their original sources and place the raw files under:
 
@@ -22,10 +22,10 @@ Dataset sources:
 
 Expected columns:
 
-- IMDb: `review`, `sentiment` (values: `positive` / `negative`)
-- Twitter US Airline: `text`, `airline_sentiment` (values: `positive` / `neutral` / `negative`)
-- Sentiment140: either the default 6-column CSV (`target,id,date,query,user,text`) or an equivalent CSV containing at least `target` and `text`.
+- IMDb: `review`, `sentiment`
+- Twitter US Airline: `text`, `airline_sentiment`
+- Sentiment140: 6-column CSV (`target,id,date,query,user,text`) or `target` and `text`.
 
-Preprocessing in this codebase removes:
+Preprocessing in this removes:
 - URLs
 - `@mentions`

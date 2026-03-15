@@ -16,7 +16,7 @@ from _experiment_utils import (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run Table 1 experiment grid.")
+    parser = argparse.ArgumentParser(description="Table 1 experiment grid")
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
     parser.add_argument("--output", type=str, default="outputs/raw/table1_raw.csv")
     parser.add_argument("--seed", type=int, default=42)

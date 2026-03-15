@@ -14,7 +14,7 @@ from scripts._experiment_utils import compose_runtime_config, run_train_eval
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train/eval one model with cache-aware loading.")
+    parser = argparse.ArgumentParser(description="Train one model variant.")
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
     parser.add_argument("--dataset", type=str, required=True, choices=["imdb", "twitter_us_airline", "sentiment140"])
     parser.add_argument(

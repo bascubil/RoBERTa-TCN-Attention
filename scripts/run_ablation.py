@@ -20,7 +20,7 @@ from scripts._experiment_utils import (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run Table 2 ablation benchmark.")
+    parser = argparse.ArgumentParser(description="Table 2 ablation")
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
     parser.add_argument(
         "--datasets",

@@ -26,7 +26,7 @@ if torch.cuda.is_available():
     torch.backends.cudnn.conv.fp32_precision = 'tf32'
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Measure validation throughput with cache-aware loading.")
+    parser = argparse.ArgumentParser(description="Measure validation throughput on the selected datasets")
     parser.add_argument("--config", type=str, default="configs/experiment.yaml")
     parser.add_argument(
         "--datasets",
