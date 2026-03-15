@@ -20,7 +20,10 @@ from scripts._experiment_utils import (
 )
 
 import torch
-torch.backends.cudnn.benchmark = True
+if torch.cuda.is_available():
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cuda.matmul.fp32_precision = 'tf32'
+    torch.backends.cudnn.conv.fp32_precision = 'tf32'
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Measure validation throughput with cache-aware loading.")

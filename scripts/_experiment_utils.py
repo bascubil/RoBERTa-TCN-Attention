@@ -228,7 +228,7 @@ def run_train_eval(cfg: Dict[str, Any], *, dry_run: bool = False, eval_split: st
     labels_all: List[int] = []
 
     model.eval()
-    with torch.no_grad():
+    with torch.inference_mode():
         for start in range(0, split["labels"].shape[0], batch_size):
             end = min(start + batch_size, split["labels"].shape[0])
 
@@ -273,13 +273,16 @@ def measure_validation_throughput(cfg: Dict[str, Any], *, split: str = "val", wa
 
     steps = max(1, math.ceil(num_items / batch_size))
 
-    with torch.no_grad():
+    with torch.inference_mode():
         for step in range(min(warmup_steps, steps)):
             start = step * batch_size
             end = min(start + batch_size, num_items)
             input_ids = target["input_ids"][start:end].to(device)
             attention_mask = target["attention_mask"][start:end].to(device)
             _ = model(input_ids, attention_mask)
+
+        if torch.cuda.is_available() and str(device).startswith("cuda"):
+            torch.cuda.synchronize()
 
         t0 = time.perf_counter()
         for step in range(steps):
@@ -288,6 +291,10 @@ def measure_validation_throughput(cfg: Dict[str, Any], *, split: str = "val", wa
             input_ids = target["input_ids"][start:end].to(device)
             attention_mask = target["attention_mask"][start:end].to(device)
             _ = model(input_ids, attention_mask)
+
+        if torch.cuda.is_available() and str(device).startswith("cuda"):
+            torch.cuda.synchronize()
+
         elapsed = time.perf_counter() - t0
 
     return float(steps / elapsed) if elapsed > 0 else 0.0
