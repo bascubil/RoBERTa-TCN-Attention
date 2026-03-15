@@ -1,6 +1,6 @@
 # RoBERTa-TCN-Attention
 
-This repository contains the code for the manuscript:
+repository contains the code for the manuscript:
 
 > A Sentiment Classification Model Using RoBERTa-TCN with Self-Attention  
 > Namwoo Kim, Taehyun Ha
@@ -167,7 +167,7 @@ Options:
 
 ### 3) Evaluate one split
 
-`eval.py` uses the shared training/evaluation pipeline and reports metrics on the selected split.  
+`eval.py` uses the shared train/eval pipeline and reports metrics on the selected split.  
 It does not load a saved checkpoint from disk.
 
 Example:

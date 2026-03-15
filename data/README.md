@@ -1,9 +1,7 @@
 # Data folder
 
 Raw dataset files are not included in this repository.
-Download the files listed below and place them in `data/raw/`.
-
-Please download the datasets from their original sources and place the raw files under:
+Place these files in `data/raw/`:
 
 - `data/raw/IMDB Dataset.csv`
 - `data/raw/Twitter US Airline Sentiment Dataset.csv`

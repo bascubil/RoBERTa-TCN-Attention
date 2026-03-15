@@ -402,9 +402,7 @@ def build_data_bundle(
     build_if_missing = bool(cache_cfg.get("build_if_missing", False))
 
     if not cache_enabled:
-        raise ValueError(
-            "Set dataset.cache.enabled=true, or enable sample_mode for smoke tests."
-        )
+        raise ValueError("Set dataset.cache.enabled=true")
 
     cache_dir = resolve_cache_dir(dataset_cfg, preprocessing_cfg, seed)
 
